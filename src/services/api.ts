@@ -1,5 +1,9 @@
 // Central API service — connects Vue frontend to Express backend
-const API_BASE = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001/api'
+const isLocal = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const API_BASE = (import.meta.env.VITE_API_URL as string) || 
+  (isLocal ? 'http://localhost:3001/api' : 'https://be-kkn.vercel.app/api');
 
 async function request<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('kkn_token')

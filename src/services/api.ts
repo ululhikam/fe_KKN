@@ -2,8 +2,12 @@
 const isLocal = typeof window !== 'undefined' && 
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-const API_BASE = (import.meta.env.VITE_API_URL as string) || 
-  (isLocal ? 'http://localhost:3001/api' : 'https://be-kkn.vercel.app/api');
+let API_BASE = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001/api';
+
+// Safety Guard: Force production backend URL if we are in production but API URL still points to localhost
+if (!isLocal && (API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1'))) {
+  API_BASE = 'https://be-kkn.vercel.app/api';
+}
 
 async function request<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('kkn_token')

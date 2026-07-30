@@ -1,33 +1,32 @@
 <script setup>
 import { ref } from 'vue'
-import umkmPotensi from '../assets/umkm_potensi.png'
 
-const activeTab = ref('sejarah')
+const activeTab = ref('geografi')
 
 const tabs = [
-  { id: 'sejarah', label: 'Sejarah Singkat' },
-  { id: 'geografi', label: 'Geografi & Wilayah' },
-  { id: 'demografi', label: 'Demografi & Penduduk' }
+  { id: 'geografi', label: 'Geografis & Lingkungan' },
+  { id: 'sosial_ekonomi', label: 'Sosial & Ekonomi' },
+  { id: 'infrastruktur', label: 'Infrastruktur & Akses' }
 ]
 
 const potentials = [
   {
-    title: 'UMKM Kopi Robusta & Arabika',
-    desc: 'Desa Katekan terkenal sebagai salah satu produsen kopi berkualitas di Temanggung. Biji kopi diproses secara tradisional dan modern oleh kelompok tani setempat.',
-    tag: 'UMKM',
-    image: umkmPotensi
-  },
-  {
-    title: 'Pertanian & Hortikultura',
-    desc: 'Dengan tanah vulkanis subur di lereng gunung, komoditas utama berupa padi, jagung, cabai, sayuran segar, serta tanaman tembakau musiman berkualitas tinggi.',
+    title: 'Pertanian Padi & Palawija',
+    desc: 'Sebagai wilayah agraris dataran rendah yang subur, komoditas utama berupa padi kualitas unggul serta palawija menjadi pilar utama perekonomian Dusun Menggah.',
     tag: 'Pertanian',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80'
   },
   {
-    title: 'Kesenian Tradisional Jaran Kepang',
-    desc: 'Melestarikan warisan budaya leluhur melalui sanggar seni tari tradisional kuda lumping/jaran kepang yang sering tampil di acara bersih dusun dan festival daerah.',
-    tag: 'Kebudayaan',
-    image: 'https://images.unsplash.com/photo-1590073844006-33379778ae09?auto=format&fit=crop&w=600&q=80'
+    title: 'Peternakan Rakyat',
+    desc: 'Banyak warga mengelola peternakan sapi dan kambing secara mandiri maupun berkelompok, memanfaatkan melimpahnya pakan hijau dari sisa hasil pertanian lokal.',
+    tag: 'Peternakan',
+    image: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    title: 'Guyub Rukun & Gotong Royong',
+    desc: 'Nilai-nilai sosial gotong royong, pertemuan warga secara silih berganti, dan kegiatan keagamaan menjadi pondasi kerukunan hidup Dusun Menggah.',
+    tag: 'Sosial Budaya',
+    image: 'https://images.unsplash.com/photo-1576267423445-b2e0074d68a4?auto=format&fit=crop&w=600&q=80'
   }
 ]
 </script>
@@ -64,71 +63,62 @@ const potentials = [
           <!-- Tab Body -->
           <div class="tab-content">
             <transition name="fade" mode="out-in">
-              <!-- Sejarah -->
-              <div v-if="activeTab === 'sejarah'" key="sejarah" class="content-pane">
-                <h3>Asal Usul & Sejarah Desa</h3>
+              <!-- Geografis & Lingkungan -->
+              <div v-if="activeTab === 'geografi'" key="geografi" class="content-pane">
+                <h3>Geografis & Karakteristik Lingkungan</h3>
                 <p>
-                  Nama <strong>Desa Katekan</strong> dipercaya berasal dari kata bahasa Jawa kuno yang berarti "datangnya kemakmuran" (ketekan/katekan). 
-                  Sejak masa kolonial Belanda, wilayah ini dikenal subur dan dihuni oleh masyarakat agraris yang rukun dan gotong royong.
+                  Kecamatan Gantiwarno berlokasi di bagian selatan Kabupaten Klaten dan berbatasan langsung dengan Provinsi Daerah Istimewa Yogyakarta (Sleman dan Gunungkidul). Desa Katekan sendiri berada di kawasan dengan topografi dataran rendah yang subur.
                 </p>
                 <p>
-                  Dusun Menggah sendiri merupakan salah satu dusun tertua di Desa Katekan yang memegang teguh tradisi leluhur seperti "Nyadran" dan "Merti Dusun" sebagai simbol rasa syukur atas hasil bumi yang melimpah.
-                </p>
-                <ul class="bullet-list">
-                  <li><span class="custom-bullet"></span> Berdiri sebagai pemukiman mandiri sejak awal abad ke-19</li>
-                  <li><span class="custom-bullet"></span> Terkenal dengan nilai-nilai kerukunan antarumat beragama yang erat</li>
-                  <li><span class="custom-bullet"></span> Mempertahankan kearifan lokal pengolahan air bersih dari mata air alami</li>
-                </ul>
-              </div>
-
-              <!-- Geografi -->
-              <div v-else-if="activeTab === 'geografi'" key="geografi" class="content-pane">
-                <h3>Letak Geografis & Batas Wilayah</h3>
-                <p>
-                  Desa Katekan terletak di kaki perbukitan dengan ketinggian rata-rata <strong>700 - 900 meter di atas permukaan laut (mdpl)</strong>. 
-                  Suhu udara berkisar antara 18°C hingga 26°C, menjadikannya kawasan yang sejuk dan sangat mendukung sektor hortikultura.
+                  Dusun Menggah mewarisi karakteristik umum Desa Katekan yang bercorak agraris. Lingkungan pedesaannya masih sangat asri dan didominasi oleh lahan pertanian serta pemukiman warga yang menyatu dengan alam.
                 </p>
                 <div class="geo-stats">
                   <div class="geo-stat-card">
                     <span class="geo-label">Utara</span>
-                    <span class="geo-val">Kecamatan Tretep</span>
+                    <span class="geo-val">Kecamatan Jogonalan</span>
                   </div>
                   <div class="geo-stat-card">
                     <span class="geo-label">Selatan</span>
-                    <span class="geo-val">Desa Candimulyo</span>
+                    <span class="geo-val">Kec. Gedangsari (Gunungkidul)</span>
                   </div>
                   <div class="geo-stat-card">
                     <span class="geo-label">Timur</span>
-                    <span class="geo-val">Kecamatan Bejen</span>
+                    <span class="geo-val">Kecamatan Wedi</span>
                   </div>
                   <div class="geo-stat-card">
                     <span class="geo-label">Barat</span>
-                    <span class="geo-val">Kabupaten Wonosobo</span>
+                    <span class="geo-val">Kecamatan Prambanan</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Demografi -->
-              <div v-else-if="activeTab === 'demografi'" key="demografi" class="content-pane">
-                <h3>Demografi & Mata Pencaharian</h3>
+              <!-- Sosial & Ekonomi -->
+              <div v-else-if="activeTab === 'sosial_ekonomi'" key="sosial_ekonomi" class="content-pane">
+                <h3>Sosial, Budaya & Ekonomi Warga</h3>
                 <p>
-                  Sebagian besar penduduk Dusun Menggah dan Desa Katekan secara umum bermata pencaharian sebagai petani dan buruh tani. 
-                  Generasi muda mulai merambah ke sektor wirausaha digital dan UMKM mandiri.
+                  Mayoritas penduduk di wilayah Desa Katekan, termasuk Dusun Menggah, umumnya mengandalkan sektor pertanian (padi dan palawija) serta peternakan sebagai sumber mata pencaharian utama. Terdapat juga warga yang berprofesi sebagai pedagang, pekerja swasta, dan buruh harian.
                 </p>
-                <div class="demographic-stats">
-                  <div class="dem-item">
-                    <span class="dem-percent">72%</span>
-                    <span class="dem-label">Petani / Pekebun</span>
-                  </div>
-                  <div class="dem-item">
-                    <span class="dem-percent">15%</span>
-                    <span class="dem-label">Wirausaha / UMKM</span>
-                  </div>
-                  <div class="dem-item">
-                    <span class="dem-percent">13%</span>
-                    <span class="dem-label">Pekerja Jasa / Lainnya</span>
-                  </div>
-                </div>
+                <p>
+                  Kehidupan sosial kemasyarakatan di tingkat dusun biasanya masih sangat kental dengan tradisi gotong royong, kegiatan keagamaan, dan pertemuan rukun tetangga (RT/RW) yang rutin.
+                </p>
+                <ul class="bullet-list">
+                  <li><span class="custom-bullet"></span> Sektor Utama: Pertanian Padi, Palawija & Peternakan</li>
+                  <li><span class="custom-bullet"></span> Kehidupan sosial berlandaskan kekeluargaan & gotong royong</li>
+                  <li><span class="custom-bullet"></span> Kegiatan keagamaan dan kemasyarakatan rukun warga yang aktif</li>
+                </ul>
+              </div>
+
+              <!-- Infrastruktur -->
+              <div v-else-if="activeTab === 'infrastruktur'" key="infrastruktur" class="content-pane">
+                <h3>Infrastruktur & Akses Fasilitas Publik</h3>
+                <p>
+                  Sebagai bagian dari Desa Katekan, warga Dusun Menggah terintegrasi dengan akses fasilitas umum tingkat desa dan kecamatan untuk menunjang kebutuhan sosial dan administrasi:
+                </p>
+                <ul class="bullet-list">
+                  <li><span class="custom-bullet"></span> Layanan administrasi dan kepengurusan di Balai Desa Katekan.</li>
+                  <li><span class="custom-bullet"></span> Fasilitas pendidikan dasar (SD) yang berada di sekitar kawasan desa.</li>
+                  <li><span class="custom-bullet"></span> Akses kesehatan primer melalui Puskesmas Pembantu atau Puskesmas Gantiwarno.</li>
+                </ul>
               </div>
             </transition>
           </div>
@@ -139,20 +129,20 @@ const potentials = [
           <div class="summary-top">
             <span class="summary-badge">Ringkasan Wilayah</span>
             <h3>Dusun Menggah</h3>
-            <span class="region-location">Desa Katekan, Temanggung</span>
+            <span class="region-location">Desa Katekan, Klaten</span>
           </div>
           <div class="summary-body">
             <div class="info-row">
-              <span class="info-label">Jumlah Kepala Keluarga</span>
-              <span class="info-value">~180 KK</span>
+              <span class="info-label">Kecamatan</span>
+              <span class="info-value">Gantiwarno</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Komoditas Unggulan</span>
-              <span class="info-value">Kopi & Tembakau</span>
+              <span class="info-label">Komoditas Utama</span>
+              <span class="info-value">Padi & Palawija</span>
             </div>
             <div class="info-row">
               <span class="info-label">Karakteristik Sosial</span>
-              <span class="info-value">Gotong Royong Mandiri</span>
+              <span class="info-value">Gotong Royong & Agraris</span>
             </div>
           </div>
         </div>

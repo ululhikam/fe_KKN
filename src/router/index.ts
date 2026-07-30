@@ -20,7 +20,7 @@ const routes: Array<RouteRecordRaw> = [
     component: PublicHome,
     meta: {
       title: 'Website Resmi KKN Kelompok 4 Dusun Menggah Desa Katekan',
-      description: 'Portal digital KKN Kelompok 4 Dusun Menggah Desa Katekan, Temanggung. Rekam jejak pengabdian, profil desa, program kerja unggulan, dan dokumentasi kegiatan.'
+      description: 'Portal digital KKN Kelompok 4 Dusun Menggah Desa Katekan, Klaten. Rekam jejak pengabdian, profil desa, program kerja unggulan, dan dokumentasi kegiatan.'
     }
   },
 
@@ -98,7 +98,7 @@ router.beforeEach((to, from, next) => {
   document.title = routeTitle ? `${routeTitle}` : baseTitle
 
   // 2. Dynamic Meta Description
-  const defaultDescription = 'Portal digital KKN Kelompok 4 Dusun Menggah Desa Katekan, Temanggung. Rekam jejak pengabdian, profil desa, program kerja unggulan, dan dokumentasi kegiatan.'
+  const defaultDescription = 'Portal digital KKN Kelompok 4 Dusun Menggah Desa Katekan, Klaten. Rekam jejak pengabdian, profil desa, program kerja unggulan, dan dokumentasi kegiatan.'
   const routeDescription = to.meta.description as string | undefined
   const description = routeDescription || defaultDescription
   

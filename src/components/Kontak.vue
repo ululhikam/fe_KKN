@@ -88,11 +88,11 @@ const submitForm = () => {
               <div class="detail-label-tag">ALAMAT</div>
               <div class="row-text">
                 <strong>Sekretariat Posko</strong>
-                <span>Rumah Bapak Kepala Dusun, Dusun Menggah RT 02 / RW 04, Desa Katekan, Kec. Ngadirejo, Kab. Temanggung, Jawa Tengah.</span>
+                <span>Rumah Bapak Kepala Dusun, Dusun Menggah RT 02 / RW 04, Desa Katekan, Kec. Gantiwarno, Kab. Klaten, Jawa Tengah.</span>
                 
                 <!-- Google Maps Link Button -->
                 <a 
-                  href="https://maps.app.goo.gl/QDKo24KCpWTh5R48A" 
+                  href="https://www.google.com/maps/search/?api=1&query=Dusun+Menggah+Desa+Katekan+Gantiwarno+Klaten" 
                   target="_blank" 
                   rel="noopener" 
                   class="maps-action-link"
@@ -186,7 +186,7 @@ const submitForm = () => {
         <p class="map-subtitle">Akses peta digital penunjuk arah menuju Posko KKN Kelompok 4</p>
         <div class="map-frame-wrapper glass">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15819.349079148383!2d110.0519398!3d-7.2140417!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a95055b41ff1d%3A0xa64fa85c8f85f81!2sKatekan%2C%20Ngadirejo%2C%20Temanggung%20Regency%2C%20Central%20Java!5e0!3m2!1sen!2sid!4v1719830000000!5m2!1sen!2sid" 
+            src="https://maps.google.com/maps?q=Katekan,%20Gantiwarno,%20Klaten&t=&z=14&ie=UTF8&iwloc=&output=embed" 
             width="100%" 
             height="400" 
             style="border:0;" 

@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from 'vue'
+import gotongRoyongImg from '../assets/gotong_royong.jpg'
+import pasarUmkmImg from '../assets/pasar_umkm.png'
 
 const activeTab = ref('geografi')
 
@@ -17,16 +19,16 @@ const potentials = [
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80'
   },
   {
-    title: 'Peternakan Rakyat',
-    desc: 'Banyak warga mengelola peternakan sapi dan kambing secara mandiri maupun berkelompok, memanfaatkan melimpahnya pakan hijau dari sisa hasil pertanian lokal.',
-    tag: 'Peternakan',
-    image: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80'
+    title: 'UMKM & Perdagangan Lokal',
+    desc: 'Aktivitas perdagangan lokal dan pasar tradisional di Dusun Menggah yang menjadi wadah interaksi sosial dan penggerak ekonomi mikro kemasyarakatan.',
+    tag: 'Perdagangan',
+    image: pasarUmkmImg
   },
   {
     title: 'Guyub Rukun & Gotong Royong',
-    desc: 'Nilai-nilai sosial gotong royong, pertemuan warga secara silih berganti, dan kegiatan keagamaan menjadi pondasi kerukunan hidup Dusun Menggah.',
+    desc: 'Nilai-nilai luhur gotong royong yang tercermin dalam aksi nyata kerja bakti gotong royong bersama warga Dusun Menggah demi kebersihan dan kemajuan lingkungan.',
     tag: 'Sosial Budaya',
-    image: 'https://images.unsplash.com/photo-1576267423445-b2e0074d68a4?auto=format&fit=crop&w=600&q=80'
+    image: gotongRoyongImg
   }
 ]
 </script>

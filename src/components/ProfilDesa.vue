@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import gotongRoyongImg from '../assets/gotong_royong.jpg'
 import pasarUmkmImg from '../assets/pasar_umkm.png'
+import pertanianImg from '../assets/pertanian.jpg'
 
 const activeTab = ref('geografi')
 
@@ -13,10 +14,10 @@ const tabs = [
 
 const potentials = [
   {
-    title: 'Pertanian Padi & Palawija',
-    desc: 'Sebagai wilayah agraris dataran rendah yang subur, komoditas utama berupa padi kualitas unggul serta palawija menjadi pilar utama perekonomian Dusun Menggah.',
+    title: 'Pertanian Padi, Palawija & Tembakau',
+    desc: 'Lahan pertanian subur di Dusun Menggah didominasi komoditas padi, palawija, serta tanaman tembakau musiman yang menjadi pilar utama ekonomi warga.',
     tag: 'Pertanian',
-    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=600&q=80'
+    image: pertanianImg
   },
   {
     title: 'UMKM & Perdagangan Lokal',

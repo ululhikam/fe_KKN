@@ -39,7 +39,7 @@ import desaLandscape from '../assets/desa_landscape.png'
           <div class="stat-item glass">
             <div class="stat-top">
               <span class="stat-indicator-dot green"></span>
-              <span class="stat-number">12+</span>
+              <span class="stat-number">88</span>
             </div>
             <span class="stat-label">Program</span>
           </div>
@@ -47,7 +47,7 @@ import desaLandscape from '../assets/desa_landscape.png'
           <div class="stat-item glass">
             <div class="stat-top">
               <span class="stat-indicator-dot gold"></span>
-              <span class="stat-number">30 HARI</span>
+              <span class="stat-number">41 HARI</span>
             </div>
             <span class="stat-label">Pengabdian</span>
           </div>

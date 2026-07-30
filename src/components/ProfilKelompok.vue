@@ -39,16 +39,7 @@ const members = [
     linkedin: '#',
     photo: imgDaffa
   },
-  {
-    name: 'Adithya Rifansyah',
-    role: 'Sekretaris 1',
-    nim: '2023012043',
-    major: 'Teknik Industri',
-    gender: 'L',
-    instagram: '#',
-    linkedin: '#',
-    photo: avatarMale
-  },
+
   {
     name: 'Azka Aprilia Ananta',
     role: 'Sekretaris 2',

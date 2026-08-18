@@ -64,6 +64,8 @@ export interface BeritaAcara {
   }>
   jumlah_peserta?: number
   foto_urls?: string[]
+  hasil_kegiatan?: string
+  catatan?: string
   created_at: string
   updated_at: string
 }

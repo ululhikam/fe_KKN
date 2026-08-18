@@ -210,10 +210,10 @@ onMounted(load)
               </td>
               <td>
                 <div class="action-row">
-                  <button v-if="b.status === 'draft'" class="btn-action btn-action-edit" title="Edit" @click="openEdit(b)">Edit</button>
+                  <button v-if="b.status === 'draft' || isAdmin()" class="btn-action btn-action-edit" title="Edit" @click="openEdit(b)">Edit</button>
                   <button v-if="b.status === 'draft'" class="btn-action btn-action-submit" title="Ajukan" @click="submitBA(b.id)">Ajukan</button>
                   <button v-if="b.status === 'diajukan' && isAdmin()" class="btn-action btn-action-approve" title="Setujui" @click="approveBA(b.id)">Setujui</button>
-                  <button v-if="b.status === 'draft'" class="btn-action btn-action-danger" title="Hapus" @click="deleteBA(b.id)">Hapus</button>
+                  <button v-if="b.status === 'draft' || isAdmin()" class="btn-action btn-action-danger" title="Hapus" @click="deleteBA(b.id)">Hapus</button>
                 </div>
               </td>
             </tr>

@@ -115,7 +115,7 @@ onMounted(loadDetail)
     <!-- Error / Not Found -->
     <div v-else-if="hasError || !ba" class="detail-error-screen">
       <div class="error-content glass">
-        <div class="error-icon">📄</div>
+        <div class="error-icon"></div>
         <h2>Dokumen Tidak Ditemukan</h2>
         <p>Berita acara yang Anda cari tidak tersedia atau telah dihapus.</p>
         <button class="btn btn-primary" @click="goBack">
@@ -153,15 +153,15 @@ onMounted(loadDetail)
 
             <div class="hero-meta-bar">
               <div class="meta-chip">
-                <span class="meta-chip-icon">📅</span>
+                <span class="meta-chip-icon"></span>
                 <span>{{ formatDay(ba.tanggal_ba) }}, {{ formatDate(ba.tanggal_ba) }}</span>
               </div>
               <div class="meta-chip">
-                <span class="meta-chip-icon">✍️</span>
+                <span class="meta-chip-icon"></span>
                 <span>{{ ba.dibuat_oleh?.name || 'Sekretaris' }}</span>
               </div>
               <div class="meta-chip">
-                <span class="meta-chip-icon">⏱️</span>
+                <span class="meta-chip-icon"></span>
                 <span>{{ readingTime }} baca</span>
               </div>
             </div>
@@ -207,7 +207,7 @@ onMounted(loadDetail)
 
             <!-- Section: Foto Dokumentasi Kegiatan -->
             <div v-if="ba.foto_urls && ba.foto_urls.length" class="article-section animate-fade-up">
-              <div class="section-number-badge">📸</div>
+              <div class="section-number-badge"></div>
               <h2 class="article-section-title">Dokumentasi Kegiatan</h2>
               <div class="article-divider"></div>
               <div class="detail-gallery-grid">
@@ -219,7 +219,7 @@ onMounted(loadDetail)
                 >
                   <img :src="url" :alt="`Dokumentasi ${idx + 1}`" loading="lazy" />
                   <div class="detail-gallery-overlay">
-                    <span class="zoom-icon">🔍</span>
+                    <span class="zoom-icon"></span>
                     <span class="zoom-text">Perbesar</span>
                   </div>
                 </div>
@@ -329,7 +329,7 @@ onMounted(loadDetail)
             <div class="sidebar-card glass sidebar-actions-card">
               <h4 class="sidebar-card-title">Aksi Laporan</h4>
               <button class="btn btn-primary btn-full-width" @click="printBA">
-                <span class="btn-icon">🖨️</span>
+                <span class="btn-icon"></span>
                 Cetak Berita Acara
               </button>
               <p class="sidebar-action-note">Cetak dokumen berita acara resmi ini sebagai arsip atau dokumen fisik KKN.</p>
@@ -344,11 +344,11 @@ onMounted(loadDetail)
                   Kembali ke Beranda
                 </a>
                 <router-link to="/#program-kerja" class="sidebar-nav-link">
-                  <span class="sidebar-nav-icon">📋</span>
+                  <span class="sidebar-nav-icon"></span>
                   Program Kerja
                 </router-link>
                 <router-link to="/#galeri" class="sidebar-nav-link">
-                  <span class="sidebar-nav-icon">🖼️</span>
+                  <span class="sidebar-nav-icon"></span>
                   Galeri KKN
                 </router-link>
               </div>

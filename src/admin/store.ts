@@ -63,6 +63,7 @@ export interface BeritaAcara {
     prodi?: string
   }>
   jumlah_peserta?: number
+  foto_urls?: string[]
   created_at: string
   updated_at: string
 }

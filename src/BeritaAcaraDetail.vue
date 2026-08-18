@@ -69,6 +69,26 @@ async function loadDetail() {
   isLoading.value = false
 }
 
+const showLightbox = ref(false)
+const lightboxIndex = ref(0)
+
+function openLightbox(index) {
+  lightboxIndex.value = index
+  showLightbox.value = true
+}
+
+function nextLightbox() {
+  if (ba.value?.foto_urls) {
+    lightboxIndex.value = (lightboxIndex.value + 1) % ba.value.foto_urls.length
+  }
+}
+
+function prevLightbox() {
+  if (ba.value?.foto_urls) {
+    lightboxIndex.value = (lightboxIndex.value - 1 + ba.value.foto_urls.length) % ba.value.foto_urls.length
+  }
+}
+
 function goBack() {
   router.push('/#berita-acara')
 }
@@ -170,6 +190,27 @@ onMounted(loadDetail)
               <h2 class="article-section-title">Catatan Tambahan / Kendala</h2>
               <div class="article-divider"></div>
               <p class="article-text">{{ ba.catatan }}</p>
+            </div>
+
+            <!-- Section: Foto Dokumentasi Kegiatan -->
+            <div v-if="ba.foto_urls && ba.foto_urls.length" class="article-section animate-fade-up">
+              <div class="section-number-badge">📸</div>
+              <h2 class="article-section-title">Dokumentasi Kegiatan</h2>
+              <div class="article-divider"></div>
+              <div class="detail-gallery-grid">
+                <div 
+                  v-for="(url, idx) in ba.foto_urls" 
+                  :key="idx"
+                  class="detail-gallery-card glass"
+                  @click="openLightbox(idx)"
+                >
+                  <img :src="url" :alt="`Dokumentasi ${idx + 1}`" loading="lazy" />
+                  <div class="detail-gallery-overlay">
+                    <span class="zoom-icon">🔍</span>
+                    <span class="zoom-text">Perbesar</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Section IV: Attendance -->
@@ -293,6 +334,24 @@ onMounted(loadDetail)
         </div>
       </section>
     </template>
+
+    <!-- Lightbox Modal -->
+    <Teleport to="body">
+      <transition name="fade">
+        <div v-if="showLightbox && ba && ba.foto_urls" class="lightbox-overlay" @click.self="showLightbox = false">
+          <button class="lightbox-close" @click="showLightbox = false">✕</button>
+          
+          <button v-if="ba.foto_urls.length > 1" class="lightbox-arrow lightbox-arrow-prev" @click="prevLightbox">‹</button>
+          
+          <div class="lightbox-content">
+            <img :src="ba.foto_urls[lightboxIndex]" alt="Dokumentasi Full" />
+            <p class="lightbox-caption">Foto {{ lightboxIndex + 1 }} dari {{ ba.foto_urls.length }}</p>
+          </div>
+          
+          <button v-if="ba.foto_urls.length > 1" class="lightbox-arrow lightbox-arrow-next" @click="nextLightbox">›</button>
+        </div>
+      </transition>
+    </Teleport>
 
     <Footer />
   </div>
@@ -974,6 +1033,167 @@ onMounted(loadDetail)
 
   .section-number-badge {
     left: 1.25rem;
+  }
+}
+
+/* ── GALLERY ────────────────────────────────────────────────── */
+.detail-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.detail-gallery-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+}
+
+.detail-gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.detail-gallery-card:hover img {
+  transform: scale(1.06);
+}
+
+.detail-gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.detail-gallery-card:hover .detail-gallery-overlay {
+  opacity: 1;
+}
+
+.zoom-icon {
+  font-size: 1.5rem;
+}
+
+.zoom-text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── LIGHTBOX ───────────────────────────────────────────────── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 13, 0.95);
+  backdrop-filter: blur(12px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s;
+}
+
+.lightbox-close:hover {
+  transform: scale(1.1);
+}
+
+.lightbox-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: all 0.2s;
+}
+
+.lightbox-arrow:hover {
+  background: var(--primary);
+  border-color: transparent;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.lightbox-arrow-prev {
+  left: 2rem;
+}
+
+.lightbox-arrow-next {
+  right: 2rem;
+}
+
+.lightbox-content {
+  max-width: 90%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.lightbox-caption {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .lightbox-arrow {
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+  }
+  .lightbox-arrow-prev {
+    left: 1rem;
+  }
+  .lightbox-arrow-next {
+    right: 1rem;
+  }
+  .detail-gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 }
 </style>

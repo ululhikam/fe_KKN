@@ -167,6 +167,11 @@ onMounted(load)
               class="ba-carousel-card-wrapper"
             >
               <div class="ba-card glass">
+                <div v-if="ba.foto_urls && ba.foto_urls.length" class="ba-card-cover">
+                  <img :src="ba.foto_urls[0]" :alt="ba.judul" loading="lazy" />
+                  <span v-if="ba.foto_urls.length > 1" class="ba-photo-count">+{{ ba.foto_urls.length - 1 }} foto</span>
+                </div>
+
                 <div class="ba-card-header">
                   <span class="ba-number-tag">{{ ba.nomor_ba }}</span>
                   <span class="ba-date-tag">{{ formatDate(ba.tanggal_ba) }}</span>
@@ -277,6 +282,39 @@ onMounted(load)
 .ba-card:hover {
   transform: translateY(-4px);
   border-color: var(--primary);
+}
+
+.ba-card-cover {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.ba-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.ba-card:hover .ba-card-cover img {
+  transform: scale(1.05);
+}
+
+.ba-photo-count {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  color: white;
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 /* Nav arrows */

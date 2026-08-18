@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { beritaAcaraStore, kegiatanStore, BeritaAcara, Kegiatan } from '../store'
 import { getUser, isAdmin } from '../auth'
 
+const API_BASE = 'https://be-kkn.vercel.app/api'
+
 const user = getUser()
 const items = ref<BeritaAcara[]>([])
 const kegiatanList = ref<Kegiatan[]>([])
@@ -35,9 +37,40 @@ const ANGGOTA: Member[] = [
 
 const hadirChecked = ref<string[]>([])
 const form = ref(emptyForm())
+const fotoUrls = ref<string[]>([])
+const isUploading = ref(false)
 
 function emptyForm() {
   return { kegiatan_id: '', judul: '', tanggal_ba: new Date().toISOString().split('T')[0], isi_kegiatan: '', hasil_kegiatan: '', jumlah_peserta: '' as string | number, catatan: '' }
+}
+
+async function uploadFoto(event: Event) {
+  const input = event.target as HTMLInputElement
+  if (!input.files?.length) return
+  isUploading.value = true
+  const token = localStorage.getItem('kkn_token')
+  for (const file of Array.from(input.files)) {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('folder', 'berita-acara')
+    try {
+      const res = await fetch(`${API_BASE}/upload/image`, {
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        body: formData
+      })
+      const json = await res.json()
+      if (json.data?.url) fotoUrls.value.push(json.data.url)
+    } catch (err) {
+      console.error('Upload foto gagal:', err)
+    }
+  }
+  isUploading.value = false
+  input.value = ''
+}
+
+function removeFoto(index: number) {
+  fotoUrls.value.splice(index, 1)
 }
 
 const statusLabel: Record<string, string> = { draft: 'Draft', diajukan: 'Diajukan', disetujui: 'Disetujui', ditolak: 'Ditolak' }
@@ -61,13 +94,14 @@ function getKegiatanName(id: string) {
 }
 
 function openAdd() {
-  editId.value = null; form.value = emptyForm(); hadirChecked.value = []; showModal.value = true
+  editId.value = null; form.value = emptyForm(); hadirChecked.value = []; fotoUrls.value = []; showModal.value = true
 }
 
 function openEdit(item: BeritaAcara) {
   editId.value = item.id
   form.value = { kegiatan_id: item.kegiatan_id, judul: item.judul, tanggal_ba: item.tanggal_ba, isi_kegiatan: item.isi_kegiatan, hasil_kegiatan: item.hasil_kegiatan || '', jumlah_peserta: item.jumlah_peserta || '', catatan: item.catatan || '' }
   hadirChecked.value = (item.peserta_hadir || []).map((p: any) => p.nim)
+  fotoUrls.value = (item as any).foto_urls || []
   showModal.value = true
 }
 
@@ -77,6 +111,7 @@ async function save() {
     ...form.value,
     jumlah_peserta: Number(form.value.jumlah_peserta) || peserta.length,
     peserta_hadir: peserta,
+    foto_urls: fotoUrls.value,
   }
   try {
     if (editId.value) await beritaAcaraStore.update(editId.value, data)
@@ -151,11 +186,18 @@ onMounted(load)
       <div v-else class="table-responsive">
         <table>
           <thead>
-            <tr><th>No. BA</th><th>Judul</th><th>Kegiatan</th><th>Tanggal</th><th>Peserta</th><th>Status</th><th>Aksi</th></tr>
+            <tr><th>No. BA</th><th>Foto</th><th>Judul</th><th>Kegiatan</th><th>Tanggal</th><th>Peserta</th><th>Status</th><th>Aksi</th></tr>
           </thead>
           <tbody>
             <tr v-for="b in filtered" :key="b.id">
               <td><strong style="color:#7c3aed;font-family:monospace;font-size:0.8rem">{{ b.nomor_ba }}</strong></td>
+              <td>
+                <div v-if="b.foto_urls && b.foto_urls.length" class="table-foto-preview">
+                  <img :src="b.foto_urls[0]" alt="Preview" />
+                  <span v-if="b.foto_urls.length > 1" class="table-foto-count">+{{ b.foto_urls.length - 1 }}</span>
+                </div>
+                <span v-else style="color:#94a3b8;font-size:0.75rem">—</span>
+              </td>
               <td style="max-width:220px"><span style="color:#0f172a;font-weight:700">{{ b.judul }}</span></td>
               <td style="font-size:0.8rem;color:#64748b">{{ getKegiatanName(b.kegiatan_id) }}</td>
               <td style="font-size:0.82rem">{{ formatDate(b.tanggal_ba) }}</td>
@@ -223,6 +265,23 @@ onMounted(load)
             <div class="field">
               <label>Catatan / Kendala</label>
               <textarea v-model="form.catatan" rows="2" placeholder="Catatan tambahan atau kendala selama kegiatan..."></textarea>
+            </div>
+
+            <!-- Upload Foto Kegiatan -->
+            <div class="divider"><span>Foto Dokumentasi Kegiatan</span></div>
+            <div class="field">
+              <label>Upload Foto (bisa pilih banyak)</label>
+              <div class="foto-upload-area">
+                <input type="file" accept="image/*" multiple @change="uploadFoto" :disabled="isUploading" class="foto-input" />
+                <span v-if="isUploading" class="upload-loading">⏳ Mengunggah foto...</span>
+              </div>
+              <div v-if="fotoUrls.length" class="foto-preview-grid">
+                <div v-for="(url, idx) in fotoUrls" :key="idx" class="foto-preview-item">
+                  <img :src="url" :alt="`Foto ${idx + 1}`" />
+                  <button type="button" class="foto-remove-btn" @click="removeFoto(idx)" title="Hapus foto">✕</button>
+                </div>
+              </div>
+              <p v-else style="font-size:0.75rem;color:#94a3b8">Belum ada foto yang diunggah</p>
             </div>
 
             <!-- Daftar hadir anggota KKN -->
@@ -351,4 +410,24 @@ tr:hover td { background: #f8fafc; }
 .check-item input[type="checkbox"] { accent-color: #7c3aed; margin-top: 3px; flex-shrink: 0; }
 .check-jabatan { display: block; font-size: 0.65rem; color: #7c3aed; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
 .check-nama { display: block; font-size: 0.8rem; color: #1e293b; font-weight: 700; margin-top: 0.05rem; }
+
+/* Foto Upload */
+.foto-upload-area { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.foto-input { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 0.65rem 0.9rem; font-size: 0.85rem; font-family: inherit; cursor: pointer; transition: all 0.2s; flex: 1; min-width: 200px; }
+.foto-input:hover { border-color: #7c3aed; background: #f5f3ff; }
+.foto-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.upload-loading { font-size: 0.8rem; color: #7c3aed; font-weight: 700; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.foto-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.65rem; margin-top: 0.5rem; }
+.foto-preview-item { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1; border: 1px solid #e2e8f0; transition: all 0.2s; }
+.foto-preview-item:hover { border-color: #7c3aed; box-shadow: 0 4px 12px rgba(124,58,237,0.15); }
+.foto-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+.foto-remove-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 6px; background: rgba(239,68,68,0.9); color: white; border: none; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+.foto-preview-item:hover .foto-remove-btn { opacity: 1; }
+.modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #f1f5f9; }
+
+/* Table Foto Preview */
+.table-foto-preview { position: relative; width: 40px; height: 40px; border-radius: 8px; overflow: hidden; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; }
+.table-foto-preview img { width: 100%; height: 100%; object-fit: cover; }
+.table-foto-count { position: absolute; bottom: 1px; right: 1px; background: rgba(15, 23, 42, 0.75); color: white; border-radius: 4px; padding: 0.05rem 0.2rem; font-size: 0.55rem; font-weight: 700; line-height: 1; }
 </style>

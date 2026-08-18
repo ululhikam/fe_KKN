@@ -93,6 +93,10 @@ function goBack() {
   router.push('/#berita-acara')
 }
 
+function printBA() {
+  window.print()
+}
+
 onMounted(loadDetail)
 </script>
 
@@ -123,41 +127,50 @@ onMounted(loadDetail)
     <!-- Detail Content -->
     <template v-else>
       <!-- Hero Header -->
-      <section class="detail-hero">
+      <section class="detail-hero" :class="{ 'has-cover': ba.foto_urls && ba.foto_urls.length }">
         <div class="hero-bg-pattern"></div>
-        <div class="container hero-inner">
-          <!-- Breadcrumb -->
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <router-link to="/" class="breadcrumb-link">Beranda</router-link>
-            <span class="breadcrumb-sep">›</span>
-            <router-link to="/#berita-acara" class="breadcrumb-link">Berita Acara</router-link>
-            <span class="breadcrumb-sep">›</span>
-            <span class="breadcrumb-current">{{ truncatedTitle }}</span>
-          </nav>
+        <div class="container hero-grid">
+          <div class="hero-left-content">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+              <router-link to="/" class="breadcrumb-link">Beranda</router-link>
+              <span class="breadcrumb-sep">›</span>
+              <router-link to="/#berita-acara" class="breadcrumb-link">Berita Acara</router-link>
+              <span class="breadcrumb-sep">›</span>
+              <span class="breadcrumb-current">{{ truncatedTitle }}</span>
+            </nav>
 
-          <!-- Hero Content -->
-          <div class="hero-meta-tags">
-            <span class="hero-tag hero-tag-number">{{ ba.nomor_ba }}</span>
-            <span class="hero-tag hero-tag-status">
-              <span class="status-dot"></span>
-              DISAHKAN
-            </span>
+            <!-- Hero Content -->
+            <div class="hero-meta-tags">
+              <span class="hero-tag hero-tag-number">{{ ba.nomor_ba }}</span>
+              <span class="hero-tag hero-tag-status">
+                <span class="status-dot"></span>
+                DISAHKAN
+              </span>
+            </div>
+
+            <h1 class="hero-title">{{ ba.judul }}</h1>
+
+            <div class="hero-meta-bar">
+              <div class="meta-chip">
+                <span class="meta-chip-icon">📅</span>
+                <span>{{ formatDay(ba.tanggal_ba) }}, {{ formatDate(ba.tanggal_ba) }}</span>
+              </div>
+              <div class="meta-chip">
+                <span class="meta-chip-icon">✍️</span>
+                <span>{{ ba.dibuat_oleh?.name || 'Sekretaris' }}</span>
+              </div>
+              <div class="meta-chip">
+                <span class="meta-chip-icon">⏱️</span>
+                <span>{{ readingTime }} baca</span>
+              </div>
+            </div>
           </div>
 
-          <h1 class="hero-title">{{ ba.judul }}</h1>
-
-          <div class="hero-meta-bar">
-            <div class="meta-chip">
-              <span class="meta-chip-icon">📅</span>
-              <span>{{ formatDay(ba.tanggal_ba) }}, {{ formatDate(ba.tanggal_ba) }}</span>
-            </div>
-            <div class="meta-chip">
-              <span class="meta-chip-icon">✍️</span>
-              <span>{{ ba.dibuat_oleh?.name || 'Sekretaris' }}</span>
-            </div>
-            <div class="meta-chip">
-              <span class="meta-chip-icon">⏱️</span>
-              <span>{{ readingTime }} baca</span>
+          <div v-if="ba.foto_urls && ba.foto_urls.length" class="hero-right-cover animate-fade-up">
+            <div class="hero-cover-wrapper glass">
+              <img :src="ba.foto_urls[0]" :alt="ba.judul" />
+              <div class="hero-cover-badge">Dokumentasi Utama</div>
             </div>
           </div>
         </div>
@@ -312,6 +325,16 @@ onMounted(loadDetail)
               </div>
             </div>
 
+            <!-- Action Card -->
+            <div class="sidebar-card glass sidebar-actions-card">
+              <h4 class="sidebar-card-title">Aksi Laporan</h4>
+              <button class="btn btn-primary btn-full-width" @click="printBA">
+                <span class="btn-icon">🖨️</span>
+                Cetak Berita Acara
+              </button>
+              <p class="sidebar-action-note">Cetak dokumen berita acara resmi ini sebagai arsip atau dokumen fisik KKN.</p>
+            </div>
+
             <!-- Quick Nav -->
             <div class="sidebar-card glass sidebar-nav-card">
               <h4 class="sidebar-card-title">Navigasi Cepat</h4>
@@ -445,23 +468,24 @@ onMounted(loadDetail)
    ═══════════════════════════════════════════════════════════════ */
 .detail-hero {
   position: relative;
-  padding: 10rem 0 4rem;
+  padding: 9rem 0 5rem;
   background: linear-gradient(
     160deg,
     var(--bg-base) 0%,
-    rgba(21, 128, 61, 0.06) 40%,
-    rgba(34, 197, 94, 0.08) 70%,
+    rgba(21, 128, 61, 0.05) 30%,
+    rgba(34, 197, 94, 0.08) 60%,
     var(--bg-base) 100%
   );
   overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
 }
 
 [data-theme="dark"] .detail-hero {
   background: linear-gradient(
     160deg,
     var(--bg-base) 0%,
-    rgba(21, 128, 61, 0.08) 40%,
-    rgba(34, 197, 94, 0.05) 70%,
+    rgba(21, 128, 61, 0.08) 30%,
+    rgba(34, 197, 94, 0.04) 60%,
     var(--bg-base) 100%
   );
 }
@@ -470,15 +494,76 @@ onMounted(loadDetail)
   position: absolute;
   inset: 0;
   background-image: 
-    radial-gradient(circle at 20% 80%, rgba(21, 128, 61, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.06) 0%, transparent 50%);
+    radial-gradient(circle at 10% 90%, rgba(21, 128, 61, 0.05) 0%, transparent 60%),
+    radial-gradient(circle at 90% 10%, rgba(34, 197, 94, 0.07) 0%, transparent 60%);
   pointer-events: none;
 }
 
-.hero-inner {
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+@media (min-width: 992px) {
+  .hero-grid {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+}
+
+.hero-left-content {
   position: relative;
-  z-index: 1;
-  max-width: 900px;
+  z-index: 2;
+  text-align: left;
+}
+
+.hero-right-cover {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.hero-cover-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 28px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  box-shadow: var(--shadow-lg), 0 20px 40px rgba(21, 128, 61, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] .hero-cover-wrapper {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: var(--shadow-lg), 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.hero-cover-wrapper:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+.hero-cover-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-cover-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* Breadcrumb */
@@ -1194,6 +1279,83 @@ onMounted(loadDetail)
   }
   .detail-gallery-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+/* Sidebar actions card */
+.sidebar-actions-card {
+  background: var(--bg-surface) !important;
+}
+
+.btn-full-width {
+  width: 100%;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.15);
+}
+
+.sidebar-action-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .navbar,
+  .main-footer,
+  .detail-sidebar,
+  .breadcrumb,
+  .hero-meta-tags,
+  .hero-meta-bar,
+  .article-back-row,
+  .hero-right-cover,
+  .section-number-badge {
+    display: none !important;
+  }
+  .detail-page-layout {
+    display: block !important;
+    min-height: auto !important;
+  }
+  .detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+  }
+  .detail-body {
+    padding: 0 !important;
+    background: white !important;
+  }
+  .article-section {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 1.5rem 0 !important;
+    background: transparent !important;
+    page-break-inside: avoid;
+  }
+  .detail-hero {
+    padding: 2rem 0 !important;
+    background: transparent !important;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  .hero-title {
+    color: black !important;
+    font-size: 2rem !important;
+  }
+  .approval-block {
+    background: transparent !important;
+    border: 2px solid #16a34a !important;
+    color: black !important;
   }
 }
 </style>

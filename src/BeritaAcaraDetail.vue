@@ -1,0 +1,979 @@
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import Navbar from './components/Navbar.vue'
+import Footer from './components/Footer.vue'
+import { beritaAcaraApi } from './services/api.js'
+import { beritaAcaraStore } from './admin/store'
+
+const route = useRoute()
+const router = useRouter()
+
+const ba = ref(null)
+const isLoading = ref(true)
+const hasError = ref(false)
+
+const activeSection = ref('')
+
+function formatDate(d) {
+  if (!d) return '–'
+  return new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+function formatDay(d) {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('id-ID', { weekday: 'long' })
+}
+
+const readingTime = computed(() => {
+  if (!ba.value) return '1 menit'
+  const text = [ba.value.isi_kegiatan, ba.value.hasil_kegiatan, ba.value.catatan].filter(Boolean).join(' ')
+  const words = text.split(/\s+/).length
+  const mins = Math.max(1, Math.ceil(words / 200))
+  return `${mins} menit`
+})
+
+const truncatedTitle = computed(() => {
+  if (!ba.value) return ''
+  return ba.value.judul.length > 40 ? ba.value.judul.substring(0, 40) + '…' : ba.value.judul
+})
+
+async function loadDetail() {
+  isLoading.value = true
+  hasError.value = false
+  const id = route.params.id
+
+  try {
+    const res = await beritaAcaraApi.getById(id)
+    if (res.data) {
+      ba.value = res.data
+      isLoading.value = false
+      return
+    }
+  } catch (e) {
+    // API offline, try local store
+  }
+
+  try {
+    const allItems = await beritaAcaraStore.getAll()
+    const found = allItems.find(item => item.id === id)
+    if (found) {
+      ba.value = found
+    } else {
+      hasError.value = true
+    }
+  } catch {
+    hasError.value = true
+  }
+
+  isLoading.value = false
+}
+
+function goBack() {
+  router.push('/#berita-acara')
+}
+
+onMounted(loadDetail)
+</script>
+
+<template>
+  <div class="detail-page-layout">
+    <Navbar :active-section="activeSection" />
+
+    <!-- Loading State -->
+    <div v-if="isLoading" class="detail-loading-screen">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Memuat dokumen berita acara…</p>
+      </div>
+    </div>
+
+    <!-- Error / Not Found -->
+    <div v-else-if="hasError || !ba" class="detail-error-screen">
+      <div class="error-content glass">
+        <div class="error-icon">📄</div>
+        <h2>Dokumen Tidak Ditemukan</h2>
+        <p>Berita acara yang Anda cari tidak tersedia atau telah dihapus.</p>
+        <button class="btn btn-primary" @click="goBack">
+          ← Kembali ke Beranda
+        </button>
+      </div>
+    </div>
+
+    <!-- Detail Content -->
+    <template v-else>
+      <!-- Hero Header -->
+      <section class="detail-hero">
+        <div class="hero-bg-pattern"></div>
+        <div class="container hero-inner">
+          <!-- Breadcrumb -->
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <router-link to="/" class="breadcrumb-link">Beranda</router-link>
+            <span class="breadcrumb-sep">›</span>
+            <router-link to="/#berita-acara" class="breadcrumb-link">Berita Acara</router-link>
+            <span class="breadcrumb-sep">›</span>
+            <span class="breadcrumb-current">{{ truncatedTitle }}</span>
+          </nav>
+
+          <!-- Hero Content -->
+          <div class="hero-meta-tags">
+            <span class="hero-tag hero-tag-number">{{ ba.nomor_ba }}</span>
+            <span class="hero-tag hero-tag-status">
+              <span class="status-dot"></span>
+              DISAHKAN
+            </span>
+          </div>
+
+          <h1 class="hero-title">{{ ba.judul }}</h1>
+
+          <div class="hero-meta-bar">
+            <div class="meta-chip">
+              <span class="meta-chip-icon">📅</span>
+              <span>{{ formatDay(ba.tanggal_ba) }}, {{ formatDate(ba.tanggal_ba) }}</span>
+            </div>
+            <div class="meta-chip">
+              <span class="meta-chip-icon">✍️</span>
+              <span>{{ ba.dibuat_oleh?.name || 'Sekretaris' }}</span>
+            </div>
+            <div class="meta-chip">
+              <span class="meta-chip-icon">⏱️</span>
+              <span>{{ readingTime }} baca</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Content Area -->
+      <section class="detail-body">
+        <div class="container detail-grid">
+          <!-- Article Content -->
+          <article class="detail-article">
+            <!-- Section I -->
+            <div class="article-section animate-fade-up">
+              <div class="section-number-badge">I</div>
+              <h2 class="article-section-title">Jalannya Kegiatan & Kronologi</h2>
+              <div class="article-divider"></div>
+              <p class="article-text">{{ ba.isi_kegiatan }}</p>
+            </div>
+
+            <!-- Section II -->
+            <div v-if="ba.hasil_kegiatan" class="article-section animate-fade-up">
+              <div class="section-number-badge">II</div>
+              <h2 class="article-section-title">Hasil & Output Kegiatan</h2>
+              <div class="article-divider"></div>
+              <p class="article-text">{{ ba.hasil_kegiatan }}</p>
+            </div>
+
+            <!-- Section III -->
+            <div v-if="ba.catatan" class="article-section animate-fade-up">
+              <div class="section-number-badge">III</div>
+              <h2 class="article-section-title">Catatan Tambahan / Kendala</h2>
+              <div class="article-divider"></div>
+              <p class="article-text">{{ ba.catatan }}</p>
+            </div>
+
+            <!-- Section IV: Attendance -->
+            <div v-if="ba.peserta_hadir && ba.peserta_hadir.length" class="article-section animate-fade-up">
+              <div class="section-number-badge">IV</div>
+              <h2 class="article-section-title">Daftar Hadir Anggota Kelompok</h2>
+              <div class="article-divider"></div>
+              <div class="attendance-grid">
+                <div 
+                  v-for="(p, idx) in ba.peserta_hadir" 
+                  :key="p.nim"
+                  class="attendance-card glass"
+                  :style="{ animationDelay: `${idx * 0.05}s` }"
+                >
+                  <div class="att-avatar">{{ p.nama?.charAt(0)?.toUpperCase() || '?' }}</div>
+                  <div class="att-info">
+                    <span class="att-card-name">{{ p.nama }}</span>
+                    <span class="att-card-role">{{ p.jabatan || 'Anggota' }}</span>
+                  </div>
+                  <span class="att-check">✓</span>
+                </div>
+              </div>
+              <div class="attendance-summary">
+                <span class="att-sum-count">{{ ba.peserta_hadir.length }}</span>
+                <span class="att-sum-label">anggota hadir</span>
+              </div>
+            </div>
+
+            <!-- Section V: Approval Block -->
+            <div class="article-section animate-fade-up">
+              <div class="approval-block">
+                <div class="approval-header">
+                  <div class="approval-stamp">
+                    <span class="stamp-icon">✓</span>
+                  </div>
+                  <div>
+                    <h3 class="approval-title">TELAH DISAHKAN & DISETUJUI</h3>
+                    <p class="approval-subtitle">Dokumen ini telah diverifikasi dan disahkan secara resmi</p>
+                  </div>
+                </div>
+                <div class="approval-details">
+                  <div class="approval-row">
+                    <span class="approval-label">Disetujui Oleh</span>
+                    <strong class="approval-value">{{ ba.disetujui_oleh || 'Dr. Oktaviani Windra Puspita, M.Pd.' }}</strong>
+                  </div>
+                  <div class="approval-row">
+                    <span class="approval-label">Jabatan</span>
+                    <span class="approval-value">Dosen Pembimbing Lapangan (DPL)</span>
+                  </div>
+                  <div class="approval-row">
+                    <span class="approval-label">Tanggal Pengesahan</span>
+                    <span class="approval-value">{{ formatDate(ba.disetujui_at || ba.updated_at) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="article-back-row">
+              <button class="btn btn-secondary btn-back" @click="goBack">
+                ← Kembali ke Halaman Utama
+              </button>
+            </div>
+          </article>
+
+          <!-- Sidebar -->
+          <aside class="detail-sidebar">
+            <div class="sidebar-card glass">
+              <h4 class="sidebar-card-title">Info Dokumen</h4>
+              <div class="sidebar-info-list">
+                <div class="sidebar-info-item">
+                  <span class="sidebar-info-label">Nomor BA</span>
+                  <span class="sidebar-info-value">{{ ba.nomor_ba }}</span>
+                </div>
+                <div class="sidebar-info-item">
+                  <span class="sidebar-info-label">Tanggal</span>
+                  <span class="sidebar-info-value">{{ formatDate(ba.tanggal_ba) }}</span>
+                </div>
+                <div class="sidebar-info-item">
+                  <span class="sidebar-info-label">Pelapor</span>
+                  <span class="sidebar-info-value">{{ ba.dibuat_oleh?.name || 'Sekretaris' }}</span>
+                </div>
+                <div class="sidebar-info-item">
+                  <span class="sidebar-info-label">Jabatan</span>
+                  <span class="sidebar-info-value">{{ ba.dibuat_oleh?.jabatan || 'Anggota' }}</span>
+                </div>
+                <div class="sidebar-info-item">
+                  <span class="sidebar-info-label">Jumlah Hadir</span>
+                  <span class="sidebar-info-value">{{ ba.peserta_hadir?.length || ba.jumlah_peserta || '–' }} orang</span>
+                </div>
+                <div class="sidebar-info-item">
+                  <span class="sidebar-info-label">Status</span>
+                  <span class="sidebar-info-value sidebar-status-approved">Disetujui</span>
+                </div>
+                <div class="sidebar-info-item">
+                  <span class="sidebar-info-label">Waktu Baca</span>
+                  <span class="sidebar-info-value">± {{ readingTime }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Nav -->
+            <div class="sidebar-card glass sidebar-nav-card">
+              <h4 class="sidebar-card-title">Navigasi Cepat</h4>
+              <div class="sidebar-nav-links">
+                <a href="#" @click.prevent="goBack" class="sidebar-nav-link">
+                  <span class="sidebar-nav-icon">←</span>
+                  Kembali ke Beranda
+                </a>
+                <router-link to="/#program-kerja" class="sidebar-nav-link">
+                  <span class="sidebar-nav-icon">📋</span>
+                  Program Kerja
+                </router-link>
+                <router-link to="/#galeri" class="sidebar-nav-link">
+                  <span class="sidebar-nav-icon">🖼️</span>
+                  Galeri KKN
+                </router-link>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </template>
+
+    <Footer />
+  </div>
+</template>
+
+<style scoped>
+/* ═══════════════════════════════════════════════════════════════
+   DETAIL PAGE LAYOUT
+   ═══════════════════════════════════════════════════════════════ */
+.detail-page-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── LOADING STATE ─────────────────────────────────────────── */
+.detail-loading-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding-top: 80px;
+}
+
+.loading-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── ERROR STATE ───────────────────────────────────────────── */
+.detail-error-screen {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 2rem;
+  padding-top: 80px;
+}
+
+.error-content {
+  text-align: center;
+  padding: 4rem 3rem;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error-icon {
+  font-size: 3.5rem;
+  opacity: 0.6;
+}
+
+.error-content h2 {
+  font-size: 1.5rem;
+  font-weight: 850;
+}
+
+.error-content p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HERO HEADER
+   ═══════════════════════════════════════════════════════════════ */
+.detail-hero {
+  position: relative;
+  padding: 10rem 0 4rem;
+  background: linear-gradient(
+    160deg,
+    var(--bg-base) 0%,
+    rgba(21, 128, 61, 0.06) 40%,
+    rgba(34, 197, 94, 0.08) 70%,
+    var(--bg-base) 100%
+  );
+  overflow: hidden;
+}
+
+[data-theme="dark"] .detail-hero {
+  background: linear-gradient(
+    160deg,
+    var(--bg-base) 0%,
+    rgba(21, 128, 61, 0.08) 40%,
+    rgba(34, 197, 94, 0.05) 70%,
+    var(--bg-base) 100%
+  );
+}
+
+.hero-bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(21, 128, 61, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-link {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  color: var(--primary);
+}
+
+.breadcrumb-sep {
+  color: var(--border-color);
+  font-size: 1rem;
+}
+
+.breadcrumb-current {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Hero Tags */
+.hero-meta-tags {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.hero-tag {
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 850;
+  padding: 0.4rem 0.85rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  letter-spacing: 0.03em;
+}
+
+.hero-tag-number {
+  color: var(--primary);
+  background: var(--primary-glow);
+  border: 1px solid rgba(21, 128, 61, 0.15);
+}
+
+.hero-tag-status {
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: #16a34a;
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* Hero Title */
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: 850;
+  line-height: 1.15;
+  margin-bottom: 1.75rem;
+  letter-spacing: -0.02em;
+  max-width: 800px;
+}
+
+/* Hero Meta Bar */
+.hero-meta-bar {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.meta-chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.meta-chip-icon {
+  font-size: 0.9rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN CONTENT BODY
+   ═══════════════════════════════════════════════════════════════ */
+.detail-body {
+  padding: 4rem 0 6rem;
+  background: var(--bg-base);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* ── ARTICLE ───────────────────────────────────────────────── */
+.detail-article {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.article-section {
+  position: relative;
+  padding: 2.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  transition: all 0.3s ease;
+}
+
+.article-section:hover {
+  border-color: rgba(21, 128, 61, 0.2);
+  box-shadow: 0 8px 32px rgba(21, 128, 61, 0.06);
+}
+
+.section-number-badge {
+  position: absolute;
+  top: -14px;
+  left: 2rem;
+  width: 28px;
+  height: 28px;
+  background: var(--primary);
+  color: white;
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25);
+}
+
+.article-section-title {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.article-divider {
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border-radius: 99px;
+  margin-bottom: 1.25rem;
+}
+
+.article-text {
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--text-muted);
+  white-space: pre-line;
+}
+
+/* ── ATTENDANCE GRID ───────────────────────────────────────── */
+.attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.attendance-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+.att-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  font-family: var(--display);
+  font-weight: 850;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.att-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.att-card-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.att-card-role {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.att-check {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.attendance-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.att-sum-count {
+  font-family: var(--display);
+  font-size: 1.75rem;
+  font-weight: 850;
+  color: var(--primary);
+}
+
+.att-sum-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* ── APPROVAL BLOCK ────────────────────────────────────────── */
+.approval-block {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.04), rgba(21, 128, 61, 0.06));
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.approval-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.approval-stamp {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+}
+
+.stamp-icon {
+  font-size: 1.25rem;
+  font-weight: 850;
+}
+
+.approval-title {
+  font-size: 0.82rem;
+  font-weight: 850;
+  color: #16a34a;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.15rem;
+}
+
+.approval-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.approval-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.approval-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.1);
+  font-size: 0.85rem;
+}
+
+.approval-row:last-child {
+  border-bottom: none;
+}
+
+.approval-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.approval-value {
+  color: var(--text-main);
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ── BACK BUTTON ROW ──────────────────────────────────────── */
+.article-back-row {
+  display: flex;
+}
+
+.btn-back {
+  border-radius: 14px;
+  font-weight: 750;
+  gap: 0.5rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════════ */
+.detail-sidebar {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar-card {
+  padding: 1.75rem;
+  border-radius: 20px;
+}
+
+.sidebar-card-title {
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  margin-bottom: 1.25rem;
+}
+
+.sidebar-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sidebar-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sidebar-info-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.sidebar-info-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sidebar-status-approved {
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  display: inline-block;
+  width: fit-content;
+}
+
+/* Sidebar Nav */
+.sidebar-nav-card {
+  background: var(--bg-surface) !important;
+}
+
+.sidebar-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 650;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav-link:hover {
+  background: var(--primary-glow);
+  color: var(--primary);
+  transform: translateX(4px);
+}
+
+.sidebar-nav-icon {
+  font-size: 0.9rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-sidebar {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .sidebar-card {
+    flex: 1;
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .detail-hero {
+    padding: 7rem 0 3rem;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .article-section {
+    padding: 1.75rem;
+  }
+
+  .detail-body {
+    padding: 2.5rem 0 4rem;
+  }
+
+  .detail-sidebar {
+    flex-direction: column;
+  }
+
+  .sidebar-card {
+    min-width: unset;
+  }
+
+  .approval-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .approval-value {
+    text-align: left;
+  }
+
+  .attendance-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.65rem;
+  }
+
+  .hero-meta-bar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .meta-chip {
+    width: fit-content;
+  }
+
+  .article-section {
+    padding: 1.25rem;
+    border-radius: 18px;
+  }
+
+  .section-number-badge {
+    left: 1.25rem;
+  }
+}
+</style>

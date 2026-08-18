@@ -5,8 +5,6 @@ import { beritaAcaraApi } from '../services/api.js'
 
 const isLoading = ref(false)
 const items = ref([])
-const activeBA = ref(null)
-const showModal = ref(false)
 
 const gridRef = ref(null)
 const currentIndex = ref(0)
@@ -56,7 +54,7 @@ const currentX = ref(0)
 const dragOffset = ref(0)
 
 function startDrag(e) {
-  if (e.target.closest('button')) return
+  if (e.target.closest('a')) return
   isDragging.value = true
   startX.value = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX
   currentX.value = startX.value
@@ -105,7 +103,7 @@ async function load() {
   }
 
   // Fallback to local storage store (seeded automatically)
-  items.value = beritaAcaraStore.getAll().filter(b => b.status === 'disetujui')
+  items.value = (await beritaAcaraStore.getAll()).filter(b => b.status === 'disetujui')
   isLoading.value = false
 }
 
@@ -117,11 +115,6 @@ function formatDate(d) {
 function truncateText(str, len = 120) {
   if (!str) return ''
   return str.length > len ? str.substring(0, len) + '...' : str
-}
-
-function openDetail(ba) {
-  activeBA.value = ba
-  showModal.value = true
 }
 
 onMounted(load)
@@ -185,9 +178,9 @@ onMounted(load)
                 </div>
 
                 <div class="ba-card-footer">
-                  <button class="btn btn-secondary-text" @click="openDetail(ba)">
+                  <router-link :to="`/berita-acara/${ba.id}`" class="btn-read-more">
                     Baca Laporan Lengkap <span class="arrow-indicator">→</span>
-                  </button>
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -210,94 +203,6 @@ onMounted(load)
         </div>
       </div>
     </div>
-
-    <!-- Lightbox Modal Detail -->
-    <Teleport to="body">
-      <transition name="modal-fade">
-        <div v-if="showModal && activeBA" class="modal-overlay" @click.self="showModal = false">
-          <div class="modal-box glass">
-            <!-- Header -->
-            <div class="modal-header">
-              <div>
-                <span class="modal-number">{{ activeBA.nomor_ba }}</span>
-                <h2>{{ activeBA.judul }}</h2>
-                <div class="modal-meta-row">
-                  <div class="meta-item">
-                    <span class="meta-label">TANGGAL:</span>
-                    <span class="meta-val">{{ formatDate(activeBA.tanggal_ba) }}</span>
-                  </div>
-                  <div class="meta-item">
-                    <span class="meta-label">PELAPOR:</span>
-                    <span class="meta-val">{{ activeBA.dibuat_oleh?.name || 'Sekretaris' }} ({{ activeBA.dibuat_oleh?.jabatan || 'Anggota' }})</span>
-                  </div>
-                </div>
-              </div>
-              <button class="close-btn" @click="showModal = false">✕</button>
-            </div>
-
-            <!-- Content -->
-            <div class="modal-body">
-              <!-- Section: Kronologi -->
-              <div class="content-block">
-                <h3>I. Jalannya Kegiatan & Kronologi</h3>
-                <p class="content-text">{{ activeBA.isi_kegiatan }}</p>
-              </div>
-
-              <!-- Section: Hasil -->
-              <div v-if="activeBA.hasil_kegiatan" class="content-block">
-                <h3>II. Hasil & Output Kegiatan</h3>
-                <p class="content-text">{{ activeBA.hasil_kegiatan }}</p>
-              </div>
-
-              <!-- Section: Catatan -->
-              <div v-if="activeBA.catatan" class="content-block">
-                <h3>III. Catatan Tambahan / Kendala</h3>
-                <p class="content-text">{{ activeBA.catatan }}</p>
-              </div>
-
-              <!-- Section: Kehadiran Anggota -->
-              <div v-if="activeBA.peserta_hadir && activeBA.peserta_hadir.length" class="content-block">
-                <h3>IV. Daftar Hadir Anggota Kelompok</h3>
-                <div class="attendance-badge-grid">
-                  <div 
-                    v-for="p in activeBA.peserta_hadir" 
-                    :key="p.nim"
-                    class="attendance-badge"
-                  >
-                    <span class="att-role">{{ p.jabatan }}</span>
-                    <span class="att-name">{{ p.nama }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Section: Pengesahan -->
-              <div class="sign-block glass">
-                <div class="sign-status-tag">TELAH DISAHKAN & DISETUJUI</div>
-                <div class="sign-details">
-                  <div class="sign-row">
-                    <span class="sign-label">Disetujui Oleh:</span>
-                    <strong class="sign-val">{{ activeBA.disetujui_oleh || 'Dr. Oktaviani Windra Puspita, M.Pd.' }}</strong>
-                  </div>
-                  <div class="sign-row">
-                    <span class="sign-label">Jabatan:</span>
-                    <span class="sign-val">Dosen Pembimbing Lapangan (DPL)</span>
-                  </div>
-                  <div class="sign-row">
-                    <span class="sign-label">Tanggal Pengesahan:</span>
-                    <span class="sign-val">{{ formatDate(activeBA.disetujui_at || activeBA.updated_at) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="modal-footer">
-              <button class="btn btn-close-modal" @click="showModal = false">Tutup Laporan</button>
-            </div>
-          </div>
-        </div>
-      </transition>
-    </Teleport>
   </section>
 </template>
 
@@ -488,7 +393,7 @@ onMounted(load)
   text-align: left;
 }
 
-.btn-secondary-text {
+.btn-read-more {
   background: transparent;
   border: none;
   padding: 0;
@@ -499,9 +404,11 @@ onMounted(load)
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
 }
 
-.btn-secondary-text:hover {
+.btn-read-more:hover {
   color: var(--primary-light);
 }
 
@@ -509,252 +416,7 @@ onMounted(load)
   transition: transform 0.2s ease;
 }
 
-.btn-secondary-text:hover .arrow-indicator {
+.btn-read-more:hover .arrow-indicator {
   transform: translateX(4px);
-}
-
-/* Lightbox Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(8px);
-  z-index: 5000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-}
-
-.modal-box {
-  width: 100%;
-  max-width: 760px;
-  max-height: 85vh;
-  border-radius: 28px;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes popIn {
-  from { transform: scale(0.95) translateY(10px); opacity: 0; }
-  to { transform: scale(1) translateY(0); opacity: 1; }
-}
-
-.modal-header {
-  padding: 2rem 2.5rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.5rem;
-  text-align: left;
-}
-
-.modal-number {
-  font-family: var(--display);
-  font-size: 0.75rem;
-  font-weight: 850;
-  color: var(--primary);
-  background-color: var(--primary-glow);
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  display: inline-block;
-  margin-bottom: 0.75rem;
-}
-
-.modal-header h2 {
-  font-size: 1.5rem;
-  font-weight: 850;
-  line-height: 1.25;
-  color: var(--text-main);
-  margin-bottom: 0.75rem;
-}
-
-.modal-meta-row {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.meta-item {
-  display: flex;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.meta-label {
-  color: var(--primary-light);
-}
-
-.meta-val {
-  color: var(--text-main);
-}
-
-.close-btn {
-  background: transparent;
-  border: none;
-  font-size: 1.25rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.close-btn:hover {
-  color: #ef4444;
-}
-
-.modal-body {
-  padding: 2.5rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  text-align: left;
-}
-
-@media (max-width: 640px) {
-  .modal-header { padding: 1.5rem 1.5rem 1rem; }
-  .modal-body { padding: 1.5rem; }
-}
-
-.content-block {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.content-block h3 {
-  font-size: 1rem;
-  font-weight: 850;
-  color: var(--text-main);
-  letter-spacing: 0.02em;
-}
-
-.content-text {
-  font-size: 0.92rem;
-  line-height: 1.7;
-  color: var(--text-muted);
-  white-space: pre-line;
-}
-
-/* Attendance Badge Grid */
-.attendance-badge-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.6rem;
-  margin-top: 0.25rem;
-}
-
-.attendance-badge {
-  padding: 0.6rem 0.85rem;
-  background-color: var(--bg-base);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-}
-
-.att-role {
-  font-size: 0.62rem;
-  font-weight: 850;
-  color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.att-name {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-top: 0.15rem;
-}
-
-/* Sign / Verification Block */
-.sign-block {
-  border-radius: 20px;
-  padding: 1.5rem;
-  background-color: rgba(34, 197, 94, 0.04) !important;
-  border: 1px solid rgba(34, 197, 94, 0.25) !important;
-}
-
-.sign-status-tag {
-  font-size: 0.68rem;
-  font-weight: 850;
-  color: #16a34a;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.75rem;
-}
-
-.sign-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.sign-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.82rem;
-}
-
-@media (max-width: 480px) {
-  .sign-row {
-    flex-direction: column;
-    gap: 0.1rem;
-  }
-}
-
-.sign-label {
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.sign-val {
-  color: var(--text-main);
-  font-weight: 700;
-}
-
-.modal-footer {
-  padding: 1.25rem 2.5rem 2rem;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  justify-content: flex-end;
-}
-
-@media (max-width: 640px) {
-  .modal-footer { padding: 1rem 1.5rem 1.5rem; }
-}
-
-.btn-close-modal {
-  background-color: var(--bg-base);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  font-weight: 750;
-  font-size: 0.88rem;
-  padding: 0.65rem 1.25rem;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-close-modal:hover {
-  background-color: var(--border-color);
-}
-
-/* Modal Animations */
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-  opacity: 0;
 }
 </style>

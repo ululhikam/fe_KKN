@@ -1,8 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import kknTeam from '../assets/kkn_team.jpg'
-import avatarMale from '../assets/avatar_male.png'
-import avatarFemale from '../assets/avatar_female.png'
 
 // Import member photos from assets folder
 import imgHikam from '../assets/hikam.jpg'

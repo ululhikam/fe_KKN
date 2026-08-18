@@ -3,6 +3,7 @@ import { isLoggedIn } from '../admin/auth'
 
 // Public website
 import PublicHome from '../PublicHome.vue'
+import BeritaAcaraDetail from '../BeritaAcaraDetail.vue'
 
 // Admin
 import AdminLogin from '../admin/views/AdminLogin.vue'
@@ -21,6 +22,14 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       title: 'Website Resmi KKN Kelompok 4 Dusun Menggah Desa Katekan',
       description: 'Portal digital KKN Kelompok 4 Dusun Menggah Desa Katekan, Klaten. Rekam jejak pengabdian, profil desa, program kerja unggulan, dan dokumentasi kegiatan.'
+    }
+  },
+  {
+    path: '/berita-acara/:id',
+    component: BeritaAcaraDetail,
+    meta: {
+      title: 'Detail Berita Acara - KKN Kelompok 4 Desa Katekan',
+      description: 'Laporan resmi berita acara kegiatan KKN Kelompok 4 Dusun Menggah Desa Katekan.'
     }
   },
 
